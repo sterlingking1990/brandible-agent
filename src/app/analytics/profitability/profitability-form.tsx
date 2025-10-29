@@ -2,6 +2,12 @@
 
 import { useState } from 'react';
 
+interface ProfitabilityResult {
+  total_revenue: number;
+  total_cost: number;
+  net_profit: number;
+}
+
 const ProfitabilityForm = () => {
     const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
     const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
@@ -9,11 +15,11 @@ const ProfitabilityForm = () => {
     const [rewardForStatus, setRewardForStatus] = useState(0.5);
     const [rewardForSurvey, setRewardForSurvey] = useState(2.0);
     const [rewardForChallenge, setRewardForChallenge] = useState(5.0);
-    const [results, setResults] = useState(null);
+    const [results, setResults] = useState<ProfitabilityResult | null>(null);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
+    const [error, setError] = useState<string | null>(null);
 
-    const handleAnalysis = async (e) => {
+    const handleAnalysis = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
@@ -43,7 +49,7 @@ const ProfitabilityForm = () => {
             const data = await response.json();
             setResults(data[0]); // The RPC returns an array with one object
         } catch (err) {
-            setError(err.message);
+            setError(err instanceof Error ? err.message : 'An error occurred');
         } finally {
             setLoading(false);
         }
