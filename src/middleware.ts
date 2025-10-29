@@ -19,7 +19,7 @@ export async function middleware(request: NextRequest) {
         async setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
         },
-        delete(name: string, options: CookieOptions) {
+        async delete(name: string, options: CookieOptions) {
           response.cookies.delete(name, options);
         },
       },
