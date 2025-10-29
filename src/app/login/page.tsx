@@ -1,7 +1,11 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 
-export default function LoginPage({ searchParams }: { searchParams?: { message?: string } }) {
+export default async function LoginPage({ 
+  searchParams 
+}: { 
+  searchParams: Promise<{ message?: string }> 
+}) {
   const signIn = async (formData: FormData) => {
     'use server'
     const email = formData.get('email') as string
@@ -20,7 +24,8 @@ export default function LoginPage({ searchParams }: { searchParams?: { message?:
     return redirect('/')
   }
 
-  const message = props.searchParams?.message
+  const params = await searchParams
+  const message = params.message
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 flex items-center justify-center p-4">
