@@ -1,7 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 
-export default function LoginPage(props: { searchParams?: { message?: string } }) {
+export default function LoginPage({ searchParams }: { searchParams?: { message?: string } }) {
   const signIn = async (formData: FormData) => {
     'use server'
     const email = formData.get('email') as string
