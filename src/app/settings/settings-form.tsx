@@ -1,16 +1,35 @@
 'use client';
 
-import { useState } from 'react';
-import { updateReferralRewards, updateCashoutLimit } from './actions';
+import { useState, useEffect } from 'react';
+import { updateReferralRewards, updateReferralRewardSplit, updateCashoutLimit, updateFinancialSettings } from './actions';
 
 export default function SettingsForm({ currentSettings }) {
   const [inviterReward, setInviterReward] = useState(currentSettings.referral_rewards.inviter_reward);
   const [inviteeBonus, setInviteeBonus] = useState(currentSettings.referral_rewards.invitee_bonus);
+  const [referrerPercentage, setReferrerPercentage] = useState(currentSettings.referral_reward_split.referrer * 100);
+  const [refereePercentage, setRefereePercentage] = useState(currentSettings.referral_reward_split.referee * 100);
   const [cashoutLimit, setCashoutLimit] = useState(currentSettings.cashout_limit.limit);
   const [loadingReferral, setLoadingReferral] = useState(false);
+  const [loadingReferralSplit, setLoadingReferralSplit] = useState(false);
   const [loadingCashout, setLoadingCashout] = useState(false);
   const [messageReferral, setMessageReferral] = useState('');
+  const [messageReferralSplit, setMessageReferralSplit] = useState('');
   const [messageCashout, setMessageCashout] = useState('');
+  const [errorReferralSplit, setErrorReferralSplit] = useState('');
+
+  const [coinBaseValue, setCoinBaseValue] = useState(currentSettings.coin_base_value_usd.value);
+  const [platformCommission, setPlatformCommission] = useState(currentSettings.platform_commission_percentage.value * 100);
+  const [loadingFinancial, setLoadingFinancial] = useState(false);
+  const [messageFinancial, setMessageFinancial] = useState('');
+
+  useEffect(() => {
+    const total = Number(referrerPercentage) + Number(refereePercentage);
+    if (total !== 100) {
+      setErrorReferralSplit(`Percentages must add up to 100. Current total: ${total}%`);
+    } else {
+      setErrorReferralSplit('');
+    }
+  }, [referrerPercentage, refereePercentage]);
 
   const handleReferralSubmit = async (e) => {
     e.preventDefault();
@@ -26,6 +45,24 @@ export default function SettingsForm({ currentSettings }) {
     setMessageReferral(result.message);
   };
 
+  const handleReferralSplitSubmit = async (e) => {
+    e.preventDefault();
+    if (errorReferralSplit) {
+      setMessageReferralSplit('Cannot save. Please fix the errors first.');
+      return;
+    }
+    setLoadingReferralSplit(true);
+    setMessageReferralSplit('');
+
+    const result = await updateReferralRewardSplit({
+      referrer: Number(referrerPercentage) / 100,
+      referee: Number(refereePercentage) / 100,
+    });
+
+    setLoadingReferralSplit(false);
+    setMessageReferralSplit(result.message);
+  };
+
   const handleCashoutSubmit = async (e) => {
     e.preventDefault();
     setLoadingCashout(true);
@@ -37,10 +74,79 @@ export default function SettingsForm({ currentSettings }) {
     setMessageCashout(result.message);
   };
 
+  const handleFinancialSubmit = async (e) => {
+    e.preventDefault();
+    setLoadingFinancial(true);
+    setMessageFinancial('');
+
+    const result = await updateFinancialSettings({
+      coin_base_value_usd: Number(coinBaseValue),
+      platform_commission_percentage: Number(platformCommission) / 100,
+    });
+
+    setLoadingFinancial(false);
+    setMessageFinancial(result.message);
+  };
+
   return (
     <div className="space-y-12">
       <div className="bg-white p-8 rounded-lg shadow-md">
-        <h2 className="text-2xl font-semibold text-gray-700 mb-6">Referral Rewards</h2>
+        <h2 className="text-2xl font-semibold text-gray-700 mb-6">Financial Settings</h2>
+        <form onSubmit={handleFinancialSubmit}>
+          <div className="space-y-6">
+            <div>
+              <label htmlFor="coin_base_value" className="block text-sm font-medium text-gray-700">
+                Coin Base Value (USD)
+              </label>
+              <div className="mt-1">
+                <input
+                  type="number"
+                  name="coin_base_value"
+                  id="coin_base_value"
+                  step="0.001"
+                  value={coinBaseValue}
+                  onChange={(e) => setCoinBaseValue(e.target.value)}
+                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  placeholder="e.g., 0.01"
+                />
+              </div>
+              <p className="mt-2 text-sm text-gray-500">The core USD value of a single Brandible Coin.</p>
+            </div>
+
+            <div>
+              <label htmlFor="platform_commission" className="block text-sm font-medium text-gray-700">
+                Platform Commission (%)
+              </label>
+              <div className="mt-1">
+                <input
+                  type="number"
+                  name="platform_commission"
+                  id="platform_commission"
+                  value={platformCommission}
+                  onChange={(e) => setPlatformCommission(e.target.value)}
+                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  placeholder="e.g., 20"
+                />
+              </div>
+              <p className="mt-2 text-sm text-gray-500">The percentage the platform takes during influencer cash-out.</p>
+            </div>
+          </div>
+
+          <div className="mt-8 flex items-center justify-between">
+            <button
+              type="submit"
+              disabled={loadingFinancial}
+              className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
+            >
+              {loadingFinancial ? 'Saving...' : 'Save Financial Settings'}
+            </button>
+            {messageFinancial && <p className="text-sm text-gray-600">{messageFinancial}</p>}
+          </div>
+        </form>
+      </div>
+
+      <div className="bg-white p-8 rounded-lg shadow-md">
+        <h2 className="text-2xl font-semibold text-gray-700 mb-6">User Referral Rewards</h2>
         <form onSubmit={handleReferralSubmit}>
           <div className="space-y-6">
             <div>
@@ -58,7 +164,7 @@ export default function SettingsForm({ currentSettings }) {
                   placeholder="e.g., 500"
                 />
               </div>
-              <p className="mt-2 text-sm text-gray-500">The amount of coins given to a user who successfully refers someone.</p>
+              <p className="mt-2 text-sm text-gray-500">The amount of coins given to a user who successfully refers someone using their referral code.</p>
             </div>
 
             <div>
@@ -86,9 +192,68 @@ export default function SettingsForm({ currentSettings }) {
               disabled={loadingReferral}
               className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
             >
-              {loadingReferral ? 'Saving...' : 'Save Referral Settings'}
+              {loadingReferral ? 'Saving...' : 'Save User Referral Settings'}
             </button>
             {messageReferral && <p className="text-sm text-gray-600">{messageReferral}</p>}
+          </div>
+        </form>
+      </div>
+
+      <div className="bg-white p-8 rounded-lg shadow-md">
+        <h2 className="text-2xl font-semibold text-gray-700 mb-6">Media Share Reward Split</h2>
+        <p className="mb-6 text-sm text-gray-500">
+          Configure the percentage split for rewards when a user shares media and a new user signs up. The total must equal 100%.
+        </p>
+        <form onSubmit={handleReferralSplitSubmit}>
+          <div className="space-y-6">
+            <div>
+              <label htmlFor="referrer_percentage" className="block text-sm font-medium text-gray-700">
+                Referrer Percentage (%)
+              </label>
+              <div className="mt-1">
+                <input
+                  type="number"
+                  name="referrer_percentage"
+                  id="referrer_percentage"
+                  value={referrerPercentage}
+                  onChange={(e) => setReferrerPercentage(e.target.value)}
+                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  placeholder="e.g., 10"
+                />
+              </div>
+              <p className="mt-2 text-sm text-gray-500">The percentage of the media reward that goes to the user who shared the link.</p>
+            </div>
+
+            <div>
+              <label htmlFor="referee_percentage" className="block text-sm font-medium text-gray-700">
+                Referee Percentage (%)
+              </label>
+              <div className="mt-1">
+                <input
+                  type="number"
+                  name="referee_percentage"
+                  id="referee_percentage"
+                  value={refereePercentage}
+                  onChange={(e) => setRefereePercentage(e.target.value)}
+                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  placeholder="e.g., 90"
+                />
+              </div>
+              <p className="mt-2 text-sm text-gray-500">The percentage of the media reward that goes to the new user who signed up via the link.</p>
+            </div>
+          </div>
+
+          {errorReferralSplit && <p className="mt-4 text-sm text-red-600">{errorReferralSplit}</p>}
+
+          <div className="mt-8 flex items-center justify-between">
+            <button
+              type="submit"
+              disabled={loadingReferralSplit || !!errorReferralSplit}
+              className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
+            >
+              {loadingReferralSplit ? 'Saving...' : 'Save Media Share Split'}
+            </button>
+            {messageReferralSplit && <p className="text-sm text-gray-600">{messageReferralSplit}</p>}
           </div>
         </form>
       </div>

@@ -32,6 +32,9 @@ export default function RootLayout({
             <NavLink href="/brands">
               Brand Management
             </NavLink>
+            <NavLink href="/investors">
+              Investor Management
+            </NavLink>
             <NavLink href="/admin/payouts">
               Pending Payouts
             </NavLink>

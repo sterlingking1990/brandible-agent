@@ -18,7 +18,10 @@ async function getSettings(supabase) {
 
   return {
     referral_rewards: settings.referral_rewards || { inviter_reward: 500, invitee_bonus: 250 },
+    referral_reward_split: settings.referral_reward_split || { referrer: 0.10, referee: 0.90 },
     cashout_limit: settings.cashout_limit || { limit: 10000 },
+    coin_base_value_usd: settings.coin_base_value_usd || { value: 0.01 },
+    platform_commission_percentage: settings.platform_commission_percentage || { value: 0.20 },
   };
 }
 
