@@ -22,6 +22,7 @@ async function getSettings(supabase) {
     cashout_limit: settings.cashout_limit || { limit: 10000 },
     coin_base_value_usd: settings.coin_base_value_usd || { value: 0.01 },
     platform_commission_percentage: settings.platform_commission_percentage || { value: 0.20 },
+    investor_profit_share_percentage: settings.investor_profit_share_percentage || { value: 0.10 },
   };
 }
 

@@ -35,6 +35,9 @@ export default function RootLayout({
             <NavLink href="/investors">
               Investor Management
             </NavLink>
+            <NavLink href="/investor-levels">
+              Investor Levels
+            </NavLink>
             <NavLink href="/admin/payouts">
               Pending Payouts
             </NavLink>

@@ -227,6 +227,7 @@ export async function updateCashoutLimit(newLimit: number) {
 export async function updateFinancialSettings(newSettings: {
   coin_base_value_usd: number;
   platform_commission_percentage: number;
+  investor_profit_share_percentage: number;
 }) {
   try {
     const supabase = await createClient();
@@ -241,7 +242,7 @@ export async function updateFinancialSettings(newSettings: {
       return { success: false, message: 'Only agents can update settings' };
     }
 
-    if (newSettings.coin_base_value_usd <= 0 || newSettings.platform_commission_percentage < 0 || newSettings.platform_commission_percentage > 1) {
+    if (newSettings.coin_base_value_usd <= 0 || newSettings.platform_commission_percentage < 0 || newSettings.platform_commission_percentage > 1 || newSettings.investor_profit_share_percentage < 0 || newSettings.investor_profit_share_percentage > 1) {
       return { success: false, message: 'Invalid values provided.' };
     }
 
@@ -257,8 +258,13 @@ export async function updateFinancialSettings(newSettings: {
       .update({ value: { value: newSettings.platform_commission_percentage } })
       .eq('key', 'platform_commission_percentage');
 
-    if (valueError || commissionError) {
-      const errorMessage = valueError?.message || commissionError?.message;
+    // Update Investor Profit Share
+    const { error: investorError } = await supabase
+      .rpc('set_investor_profit_share_percentage', { p_percentage: newSettings.investor_profit_share_percentage });
+
+
+    if (valueError || commissionError || investorError) {
+      const errorMessage = valueError?.message || commissionError?.message || investorError?.message;
       return { success: false, message: `Failed to update settings: ${errorMessage}` };
     }
 

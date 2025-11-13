@@ -1,174 +1,125 @@
-'use client';
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from '@/utils/supabase/server';
+import { redirect } from 'next/navigation';
+import Link from 'next/link';
+import OnboardInvestorForm from './onboard-investor-form';
 
-export default function InvestorManagementPage() {
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
-  const supabase = createClient();
-  const router = useRouter();
+async function getInvestors(supabase) {
+  // First, try to get investors from the investors table (properly onboarded)
+  const { data: properInvestors, error: investorsError } = await supabase
+    .from('investors')
+    .select(`
+      id,
+      profiles!inner (
+        id,
+        full_name,
+        email
+      )
+    `);
 
- const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setLoading(true);
-  setMessage('');
-  setError('');
+  // Then, get all profiles with user_type = 'investor' (including those not in investors table)
+  const { data: allInvestorProfiles, error: profilesError } = await supabase
+    .from('profiles')
+    .select(`
+      id,
+      full_name,
+      email
+    `)
+    .eq('user_type', 'investor');
 
-  try {
-    console.log('=== Onboarding Request ===');
-    console.log('Submitting:', { full_name: fullName, email });
-
-    // Call the Edge Function
-    const { data, error: edgeFunctionError } = await supabase.functions.invoke('onboard-investor', {
-      body: {
-        full_name: fullName,
-        email: email,
-      },
-    });
-
-    console.log('=== Response ===');
-    console.log('Data:', data);
-    console.log('Error:', edgeFunctionError);
-
-    if (edgeFunctionError) {
-      // Try to extract the actual error message from the response
-      let errorDetails = 'Unknown error';
-      
-      // Check if there's context with response body
-      if (edgeFunctionError.context && edgeFunctionError.context.body) {
-        try {
-          // If it's a ReadableStream, we need to read it
-          if (edgeFunctionError.context.body instanceof ReadableStream) {
-            const reader = edgeFunctionError.context.body.getReader();
-            const { value } = await reader.read();
-            const decoder = new TextDecoder();
-            const responseText = decoder.decode(value);
-            const errorData = JSON.parse(responseText);
-            errorDetails = errorData.error || responseText;
-          } else {
-            // If it's already text, parse it directly
-            const errorData = JSON.parse(edgeFunctionError.context.body);
-            errorDetails = errorData.error || edgeFunctionError.context.body;
-          }
-        } catch (parseError) {
-          console.error('Failed to parse error response:', parseError);
-          errorDetails = edgeFunctionError.message;
-        }
-      } else {
-        errorDetails = edgeFunctionError.message;
-      }
-      
-      throw new Error(errorDetails);
-    }
-
-    // Check for errors in the response data
-    if (data && typeof data === 'object' && 'error' in data) {
-      throw new Error(data.error);
-    }
-
-    console.log('=== Success ===');
-    setMessage(data?.message || 'Investor invited successfully!');
-    setFullName('');
-    setEmail('');
-
-  } catch (err: any) {
-    console.error('=== Catch Block Error ===');
-    console.error('Error:', err);
-    
-    let errorMessage = 'Failed to onboard investor. Please try again.';
-    
-    if (err.message) {
-      errorMessage = err.message;
-    }
-    
-    // Handle specific error cases
-    if (err.message?.includes('Database error creating new user')) {
-      errorMessage = 'System configuration issue. Please contact support.';
-    } else if (err.message?.includes('already registered')) {
-      errorMessage = 'An investor with this email already exists.';
-    } else if (err.message?.includes('Invalid email')) {
-      errorMessage = 'Please enter a valid email address.';
-    }
-    
-    setError(errorMessage);
-  } finally {
-    setLoading(false);
+  if (profilesError) {
+    console.error('Error fetching investor profiles:', profilesError);
+    return [];
   }
-};
+
+  // Get the IDs of investors that already exist in the investors table
+  const existingInvestorProfileIds = properInvestors?.map(inv => inv.profiles.id) || [];
+
+  // Combine both: properly onboarded investors and profile-only investors
+  const combinedData = [
+    // Properly onboarded investors (with investor table record)
+    ...(properInvestors || []).map(inv => ({
+      id: inv.id,
+      profile_id: inv.profiles.id,
+      profiles: {
+        full_name: inv.profiles.full_name,
+        email: inv.profiles.email
+      },
+      is_properly_onboarded: true
+    })),
+    // Profile-only investors (not in investors table)
+    ...(allInvestorProfiles || [])
+      .filter(profile => !existingInvestorProfileIds.includes(profile.id))
+      .map(profile => ({
+        id: profile.id, // Use profile ID as fallback
+        profile_id: profile.id,
+        profiles: {
+          full_name: profile.full_name,
+          email: profile.email
+        },
+        is_properly_onboarded: false
+      }))
+  ];
+
+  return combinedData;
+}
+
+export default async function InvestorsPage() {
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return redirect('/login');
+  }
+
+  const investors = await getInvestors(supabase);
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Investor Management</h1>
-      <p className="mb-6 text-gray-600">Onboard new investors by sending them an invitation to set up their account.</p>
-
-      <div className="bg-white p-6 rounded-lg shadow-md">
-        <div className="mb-4">
-          <label htmlFor="fullName" className="block text-gray-700 text-sm font-bold mb-2">
-            Full Name
-          </label>
-          <input
-            type="text"
-            id="fullName"
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            required
-            disabled={loading}
-          />
-        </div>
-        <div className="mb-6">
-          <label htmlFor="email" className="block text-gray-700 text-sm font-bold mb-2">
-            Email
-          </label>
-          <input
-            type="email"
-            id="email"
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            disabled={loading}
-          />
-        </div>
-        <div className="flex items-center justify-between">
-          <button
-            onClick={handleSubmit}
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            disabled={loading}
-          >
-            {loading ? 'Inviting...' : 'Onboard Investor'}
-          </button>
-        </div>
-        {message && (
-          <div className="mt-4 p-3 bg-green-100 border border-green-400 rounded">
-            <p className="text-green-700 text-sm">{message}</p>
-          </div>
-        )}
-        {error && (
-          <div className="mt-4 p-3 bg-red-100 border border-red-400 rounded">
-            <p className="text-red-700 text-sm font-semibold mb-1">Error:</p>
-            <p className="text-red-600 text-sm">{error}</p>
-            <p className="text-red-500 text-xs mt-2">
-              💡 Check the browser console (F12) for detailed logs
-            </p>
-          </div>
-        )}
+    <main className="bg-gray-50 min-h-screen p-8">
+      <h1 className="text-3xl font-bold text-gray-800 mb-8">Investor Management</h1>
+      
+      <div className="mb-8">
+        <h2 className="text-2xl font-semibold text-gray-700 mb-6">Onboard New Investor</h2>
+        <OnboardInvestorForm />
       </div>
 
-      <div className="mt-6 p-4 bg-yellow-50 border border-yellow-300 rounded">
-        <p className="text-yellow-900 text-sm font-semibold mb-2">🔍 Debugging Checklist:</p>
-        <ul className="text-yellow-800 text-xs space-y-1 list-disc list-inside">
-          <li>Check browser console for detailed error logs (press F12)</li>
-          <li>Go to Supabase Dashboard → Edge Functions → Select function → View Logs</li>
-          <li>Verify SUPABASE_SERVICE_ROLE_KEY is set in Edge Function environment variables</li>
-          <li>Ensure the edge function code is deployed correctly</li>
-        </ul>
+      <div className="bg-white p-8 rounded-lg shadow-md">
+        <h2 className="text-2xl font-semibold text-gray-700 mb-6">All Investors</h2>
+        <div className="flow-root">
+          <ul role="list" className="-my-5 divide-y divide-gray-200">
+            {investors.map((investor) => (
+              <li key={investor.id} className="py-5">
+                <div className="relative focus-within:ring-2 focus-within:ring-indigo-500">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <h3 className="text-sm font-semibold text-gray-800">
+                        <Link href={`/investors/${investor.is_properly_onboarded ? investor.id : investor.profile_id}`} className="hover:underline focus:outline-none">
+                          <span className="absolute inset-0" aria-hidden="true" />
+                          {investor.profiles.full_name}
+                        </Link>
+                      </h3>
+                      <p className="mt-1 text-sm text-gray-600 line-clamp-2">
+                        {investor.profiles.email}
+                      </p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      {investor.is_properly_onboarded ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          ✓ Onboarded
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                          ⚠ Needs Setup
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
-    </div>
+    </main>
   );
 }

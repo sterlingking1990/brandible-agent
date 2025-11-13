@@ -19,6 +19,7 @@ export default function SettingsForm({ currentSettings }) {
 
   const [coinBaseValue, setCoinBaseValue] = useState(currentSettings.coin_base_value_usd.value);
   const [platformCommission, setPlatformCommission] = useState(currentSettings.platform_commission_percentage.value * 100);
+  const [investorProfitShare, setInvestorProfitShare] = useState(currentSettings.investor_profit_share_percentage.value * 100);
   const [loadingFinancial, setLoadingFinancial] = useState(false);
   const [messageFinancial, setMessageFinancial] = useState('');
 
@@ -82,6 +83,7 @@ export default function SettingsForm({ currentSettings }) {
     const result = await updateFinancialSettings({
       coin_base_value_usd: Number(coinBaseValue),
       platform_commission_percentage: Number(platformCommission) / 100,
+      investor_profit_share_percentage: Number(investorProfitShare) / 100,
     });
 
     setLoadingFinancial(false);
@@ -129,6 +131,24 @@ export default function SettingsForm({ currentSettings }) {
                 />
               </div>
               <p className="mt-2 text-sm text-gray-500">The percentage the platform takes during influencer cash-out.</p>
+            </div>
+
+            <div>
+              <label htmlFor="investor_profit_share" className="block text-sm font-medium text-gray-700">
+                Investor Profit Share (%)
+              </label>
+              <div className="mt-1">
+                <input
+                  type="number"
+                  name="investor_profit_share"
+                  id="investor_profit_share"
+                  value={investorProfitShare}
+                  onChange={(e) => setInvestorProfitShare(e.target.value)}
+                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  placeholder="e.g., 10"
+                />
+              </div>
+              <p className="mt-2 text-sm text-gray-500">The percentage of the platform's commission that is shared with investors.</p>
             </div>
           </div>
 
