@@ -1,8 +1,0 @@
-{
-  "/investors/[id]/investments/new/page": "app/investors/[id]/investments/new/page.js",
-  "/login/page": "app/login/page.js",
-  "/investors/page": "app/investors/page.js",
-  "/investors/[id]/page": "app/investors/[id]/page.js",
-  "/page": "app/page.js",
-  "/coin-packages/page": "app/coin-packages/page.js"
-}
