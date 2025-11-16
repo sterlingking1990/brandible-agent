@@ -145,7 +145,7 @@ export async function updateCashoutLimit(newLimit: number) {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
     if (authError || !user) {
-      console.log('Auth error:', authTroll);
+      console.log('Auth error:', authError);
       return { 
         success: false, 
         message: 'Unauthorized - please log in' 
