@@ -1,17 +1,28 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 
-export default function InvestorLevelsForm({ investorLevels: initialInvestorLevels }) {
+// Define the InvestorLevel type
+type InvestorLevel = {
+  id: string;
+  role_name: string;
+  interest_factor: number;
+};
+
+// Update the props type
+type InvestorLevelsFormProps = {
+  investorLevels: InvestorLevel[];
+};
+
+export default function InvestorLevelsForm({ investorLevels: initialInvestorLevels }: InvestorLevelsFormProps) {
   const [roleName, setRoleName] = useState('');
   const [interestFactor, setInterestFactor] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  const [editingLevel, setEditingLevel] = useState(null); // State to hold the level being edited
+  const [editingLevel, setEditingLevel] = useState<InvestorLevel | null>(null); // Add type here
   const supabase = createClient();
   const router = useRouter();
 
@@ -19,7 +30,7 @@ export default function InvestorLevelsForm({ investorLevels: initialInvestorLeve
   useEffect(() => {
     if (editingLevel) {
       setRoleName(editingLevel.role_name);
-      setInterestFactor(editingLevel.interest_factor);
+      setInterestFactor(editingLevel.interest_factor.toString());
     } else {
       setRoleName('');
       setInterestFactor('');
