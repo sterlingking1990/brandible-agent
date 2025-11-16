@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
-export async function GET(request: Request, context: { params: Promise<{ id: string }> | { id: string } }) {
+export async function GET(request: Request, context: { params: Promise<{ id: string }> | Promise<{ id: string }> }) {
   const resolvedParams = await context.params;
   const id = resolvedParams.id;
   const supabase = await createClient();
