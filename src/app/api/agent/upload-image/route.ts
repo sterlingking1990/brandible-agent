@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     }
 
     const fileExt = file.name.split('.').pop();
-    const fileName = `${uuidv4()}.${fileExt}`;
+    const fileName = `${randomUUID()}.${fileExt}`;
     const filePath = `${fileName}`; // Store in a 'public' folder within the bucket
 
     const { data, error } = await supabase.storage
