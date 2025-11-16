@@ -12,15 +12,17 @@ export async function POST(request: Request) {
     }
 
     const formData = await request.formData();
-    const file = formData.get('file') as File;
+const fileEntry = (formData as any).get('file');
 
-    if (!file) {
+    if (!fileEntry || !(fileEntry instanceof File)) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
     }
 
+    const file = fileEntry as File;
+
     const fileExt = file.name.split('.').pop();
     const fileName = `${randomUUID()}.${fileExt}`;
-    const filePath = `${fileName}`; // Store in a 'public' folder within the bucket
+    const filePath = `${fileName}`;
 
     const { data, error } = await supabase.storage
       .from('blog_media')

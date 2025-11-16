@@ -107,7 +107,7 @@ export default function SettingsForm({ currentSettings }) {
                   id="coin_base_value"
                   step="0.001"
                   value={coinBaseValue}
-                  onChange={(e) => setCoinBaseValue(e.target.value)}
+                  onChange={(e) => setCoinBaseValue(Number(e.target.value))}
                   className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   placeholder="e.g., 0.01"
                 />
@@ -125,7 +125,7 @@ export default function SettingsForm({ currentSettings }) {
                   name="platform_commission"
                   id="platform_commission"
                   value={platformCommission}
-                  onChange={(e) => setPlatformCommission(e.target.value)}
+                  onChange={(e) => setPlatformCommission(Number(e.target.value))}
                   className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   placeholder="e.g., 20"
                 />
@@ -143,7 +143,7 @@ export default function SettingsForm({ currentSettings }) {
                   name="investor_profit_share"
                   id="investor_profit_share"
                   value={investorProfitShare}
-                  onChange={(e) => setInvestorProfitShare(e.target.value)}
+                  onChange={(e) => setInvestorProfitShare(Number(e.target.value))}
                   className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   placeholder="e.g., 10"
                 />
@@ -179,7 +179,7 @@ export default function SettingsForm({ currentSettings }) {
                   name="inviter_reward"
                   id="inviter_reward"
                   value={inviterReward}
-                  onChange={(e) => setInviterReward(e.target.value)}
+                  onChange={(e) => setInviterReward(Number(e.target.value))}
                   className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   placeholder="e.g., 500"
                 />
@@ -197,7 +197,7 @@ export default function SettingsForm({ currentSettings }) {
                   name="invitee_bonus"
                   id="invitee_bonus"
                   value={inviteeBonus}
-                  onChange={(e) => setInviteeBonus(e.target.value)}
+                  onChange={(e) => setInviteeBonus(Number(e.target.value))}
                   className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   placeholder="e.g., 250"
                 />
@@ -236,7 +236,7 @@ export default function SettingsForm({ currentSettings }) {
                   name="referrer_percentage"
                   id="referrer_percentage"
                   value={referrerPercentage}
-                  onChange={(e) => setReferrerPercentage(e.target.value)}
+                  onChange={(e) => setReferrerPercentage(Number(e.target.value))}
                   className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   placeholder="e.g., 10"
                 />
@@ -254,7 +254,7 @@ export default function SettingsForm({ currentSettings }) {
                   name="referee_percentage"
                   id="referee_percentage"
                   value={refereePercentage}
-                  onChange={(e) => setRefereePercentage(e.target.value)}
+                  onChange={(e) => setRefereePercentage(Number(e.target.value))}
                   className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   placeholder="e.g., 90"
                 />
@@ -292,7 +292,7 @@ export default function SettingsForm({ currentSettings }) {
                   name="cashout_limit"
                   id="cashout_limit"
                   value={cashoutLimit}
-                  onChange={(e) => setCashoutLimit(e.target.value)}
+                  onChange={(e) => setCashoutLimit(Number(e.target.value))}
                   className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   placeholder="e.g., 1000"
                 />
