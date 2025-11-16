@@ -1,16 +1,22 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 
+// Define the InvestorLevel interface
+interface InvestorLevel {
+  id: string;
+  role_name: string;
+  interest_factor: number;
+}
+
 export default function NewInvestmentPage({ params }) {
   const [amount, setAmount] = useState('');
   const [investorLevelId, setInvestorLevelId] = useState('');
   const [investmentDate, setInvestmentDate] = useState(new Date().toISOString().split('T')[0]);
   const [notes, setNotes] = useState('');
-  const [investorLevels, setInvestorLevels] = useState([]);
+  const [investorLevels, setInvestorLevels] = useState<InvestorLevel[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingLevels, setLoadingLevels] = useState(true);
   const [message, setMessage] = useState('');
