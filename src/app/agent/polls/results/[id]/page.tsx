@@ -7,7 +7,8 @@ import Link from 'next/link';
 type PollOptionResult = {
   id: string;
   option_text: string;
-  votes: number;
+  vote_count: number;
+  percentage: number;
 };
 
 type PollDetails = {
@@ -65,7 +66,7 @@ export default function PollResultsPage() {
         const errorData = await response.json();
         throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
-      fetchPollDetails(); // Refresh details to show closed status
+      fetchPollDetails();
     } catch (e: any) {
       setError(e.message);
     } finally {
@@ -107,55 +108,70 @@ export default function PollResultsPage() {
 
   return (
     <main className="min-h-screen bg-gray-100 p-4 sm:p-8">
-      <div className="container mx-auto">
+      <div className="container mx-auto max-w-4xl">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-800">Poll Results</h1>
-          <Link href="/agent/polls" className="text-indigo-600 hover:text-indigo-500">
+          <Link href="/agent/polls" className="text-indigo-600 hover:text-indigo-500 font-medium">
             &larr; Back to Poll List
           </Link>
         </div>
 
-        <div className="bg-white shadow-md rounded-lg p-6">
+        <div className="bg-white shadow-md rounded-lg p-6 sm:p-8">
           {error && <p className="text-red-500 mb-4">Error: {error}</p>}
 
           <h2 className="text-2xl font-semibold text-gray-800 mb-2">{pollDetails.question}</h2>
-          {pollDetails.description && <p className="text-gray-700 mb-4">{pollDetails.description}</p>}
-          <p className="text-sm text-gray-600 mb-2">
-            Status: <span className={`font-medium ${isPollOpen ? 'text-green-600' : 'text-red-600'}`}>{pollDetails.status}</span>
-          </p>
-          <p className="text-sm text-gray-600 mb-4">
-            Closes: {pollDetails.closes_at ? new Date(pollDetails.closes_at).toLocaleString() : 'N/A'}
-          </p>
+          {pollDetails.description && <p className="text-gray-600 mb-6">{pollDetails.description}</p>}
+          
+          <div className="flex gap-6 mb-6 text-sm">
+            <p className="text-gray-600">
+              Status: <span className={`font-semibold ${isPollOpen ? 'text-green-600' : 'text-red-600'}`}>{pollDetails.status}</span>
+            </p>
+            <p className="text-gray-600">
+              Closes: <span className="font-medium text-gray-800">{pollDetails.closes_at ? new Date(pollDetails.closes_at).toLocaleString() : 'N/A'}</span>
+            </p>
+          </div>
 
-          <div className="mt-6">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">Votes Breakdown ({pollDetails.total_votes} total votes)</h3>
+          <div className="mt-8">
+            <div className="flex justify-between items-baseline mb-6">
+              <h3 className="text-xl font-semibold text-gray-800">Votes Breakdown</h3>
+              <span className="text-sm font-medium text-gray-600">{pollDetails.total_votes} total {pollDetails.total_votes === 1 ? 'vote' : 'votes'}</span>
+            </div>
+            
             {pollDetails.options && pollDetails.options.length > 0 ? (
-              <div className="space-y-4">
+              <div className="space-y-5">
                 {pollDetails.options.map((option) => (
-                  <div key={option.id} className="flex flex-col sm:flex-row sm:items-center">
-                    <div className="w-full sm:w-1/3 text-gray-700 font-medium mb-1 sm:mb-0">{option.option_text}</div>
-                    <div className="w-full sm:w-2/3 bg-gray-200 rounded-full h-8 flex items-center">
+                  <div key={option.id} className="space-y-2">
+                    <div className="flex justify-between items-baseline">
+                      <span className="text-gray-800 font-medium">{option.option_text}</span>
+                      <span className="text-sm font-semibold text-gray-700">
+                        {option.percentage.toFixed(1)}%
+                      </span>
+                    </div>
+                    <div className="relative w-full bg-gray-200 rounded-full h-10 overflow-hidden">
                       <div
-                        className="bg-indigo-600 h-full rounded-full text-white text-right pr-2 flex items-center justify-end"
-                        style={{ width: `${pollDetails.total_votes > 0 ? (option.votes / pollDetails.total_votes) * 100 : 0}%` }}
-                      >
-                        {pollDetails.total_votes > 0 ? ((option.votes / pollDetails.total_votes) * 100).toFixed(1) : 0}% ({option.votes} votes)
+                        className="absolute top-0 left-0 h-full bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-full transition-all duration-300 ease-out"
+                        style={{ width: `${option.percentage}%` }}
+                      />
+                      <div className="absolute top-0 left-0 w-full h-full flex items-center px-3">
+                        <span className="text-sm font-medium text-gray-700">
+                          {option.vote_count} {option.vote_count === 1 ? 'vote' : 'votes'}
+                        </span>
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-gray-500">No options or votes recorded yet.</p>
+              <p className="text-gray-500 text-center py-8">No options or votes recorded yet.</p>
             )}
           </div>
 
           {isPollOpen && (
-            <div className="mt-8 flex justify-end">
+            <div className="mt-10 pt-6 border-t border-gray-200 flex justify-end">
               <button
                 onClick={handleClosePoll}
                 disabled={submitting}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
+                className="px-6 py-2.5 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {submitting ? 'Closing Poll...' : 'Close Poll Now'}
               </button>
