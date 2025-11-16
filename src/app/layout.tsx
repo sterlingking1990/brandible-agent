@@ -56,6 +56,12 @@ export default function RootLayout({
             <NavLink href="/activity-logs">
               Activity Logs
             </NavLink>
+            <NavLink href="/agent/blog">
+              Blog Management
+            </NavLink>
+            <NavLink href="/agent/polls">
+              Poll Management
+            </NavLink>
             <NavLink href="/analytics/profitability">
               Profitability Analysis
             </NavLink>
