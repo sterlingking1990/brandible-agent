@@ -275,3 +275,68 @@ export async function updateFinancialSettings(newSettings: {
     return { success: false, message: 'An unexpected error occurred' };
   }
 }
+
+export async function updateAlgorithmWeights(newWeights: {
+  rank_weight_reward: number;
+  rank_weight_interest: number;
+  rank_weight_recency: number;
+  rank_decay_rate: number;
+}) {
+  try {
+    const supabase = await createClient();
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return { success: false, message: 'Unauthorized - please log in' };
+    }
+
+    const userType = user.user_metadata?.user_type || user.app_metadata?.user_type;
+    if (userType !== 'agent') {
+      return { success: false, message: 'Only agents can update algorithm settings' };
+    }
+
+    // Validate input
+    if (
+      newWeights.rank_weight_reward === null || newWeights.rank_weight_reward < 0 ||
+      newWeights.rank_weight_interest === null || newWeights.rank_weight_interest < 0 ||
+      newWeights.rank_weight_recency === null || newWeights.rank_weight_recency < 0 ||
+      newWeights.rank_decay_rate === null || newWeights.rank_decay_rate < 0
+    ) {
+      return { success: false, message: 'All algorithm weights and decay rate must be positive numbers.' };
+    }
+
+    const updates = [
+      { key: 'rank_weight_reward', value: { value: newWeights.rank_weight_reward } },
+      { key: 'rank_weight_interest', value: { value: newWeights.rank_weight_interest } },
+      { key: 'rank_weight_recency', value: { value: newWeights.rank_weight_recency } },
+      { key: 'rank_decay_rate', value: { value: newWeights.rank_decay_rate } },
+    ];
+
+    for (const updateItem of updates) {
+      const { error: updateError } = await supabase
+        .from('app_settings')
+        .update(updateItem)
+        .eq('key', updateItem.key);
+
+      if (updateError) {
+        // If update fails, try to insert (upsert logic)
+        const { error: insertError } = await supabase
+          .from('app_settings')
+          .insert(updateItem);
+        
+        if (insertError) {
+          console.error(`Database operation error for key ${updateItem.key}:`, updateError || insertError);
+          return { success: false, message: `Failed to update ${updateItem.key}: ${updateError?.message || insertError?.message}` };
+        }
+      }
+    }
+
+    revalidatePath('/settings');
+
+    return { success: true, message: 'Algorithm weights updated successfully!' };
+
+  } catch (err) {
+    console.error('Unexpected error in updateAlgorithmWeights:', err);
+    return { success: false, message: 'An unexpected error occurred' };
+  }
+}

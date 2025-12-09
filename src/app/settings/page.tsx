@@ -23,6 +23,10 @@ async function getSettings(supabase) {
     coin_base_value_usd: settings.coin_base_value_usd || { value: 0.01 },
     platform_commission_percentage: settings.platform_commission_percentage || { value: 0.20 },
     investor_profit_share_percentage: settings.investor_profit_share_percentage || { value: 0.10 },
+    rank_weight_reward: settings.rank_weight_reward || { value: 2.0 },
+    rank_weight_interest: settings.rank_weight_interest || { value: 10.0 },
+    rank_weight_recency: settings.rank_weight_recency || { value: 1.0 },
+    rank_decay_rate: settings.rank_decay_rate || { value: 0.05 },
   };
 }
 

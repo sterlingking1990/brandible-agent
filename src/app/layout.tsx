@@ -50,12 +50,18 @@ export default function RootLayout({
             <NavLink href="/coin-packages">
               Coin Packages
             </NavLink>
-            <NavLink href="/settings">
-              App Settings
-            </NavLink>
-            <NavLink href="/activity-logs">
-              Activity Logs
-            </NavLink>
+                            <NavLink href="/settings">
+                              App Settings
+                            </NavLink>
+                            <NavLink href="/dashboard/industries">
+                              Industries
+                            </NavLink>
+                            <NavLink href="/dashboard/interests">
+                              Interests
+                            </NavLink>
+                            <NavLink href="/activity-logs">
+                              Activity Logs
+                            </NavLink>
             <NavLink href="/agent/blog">
               Blog Management
             </NavLink>
