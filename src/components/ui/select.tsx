@@ -62,7 +62,7 @@ function Select({ value, onValueChange, children, disabled }: SelectProps) {
       <div className="relative inline-block w-full" onClick={handleTriggerClick}>
         {React.Children.map(children, child => {
           if (React.isValidElement(child) && (child.type as any).displayName === 'SelectTrigger') {
-            return React.cloneElement(child, { disabled: disabled }); // Pass disabled to trigger
+            return React.cloneElement(child as React.ReactElement<any>, { disabled: disabled }); // Pass disabled to trigger
           }
           return null; // Don't render SelectContent here
         })}
@@ -74,11 +74,14 @@ function Select({ value, onValueChange, children, disabled }: SelectProps) {
           disabled={disabled}
           aria-hidden="true" // Hide from screen readers, as SelectTrigger provides accessibility
         >
-          {options.map(item => (
-            <option key={item.props.value} value={item.props.value} disabled={item.props.disabled}>
-              {item.props.children}
-            </option>
-          ))}
+          {options.map(item => {
+            const props = item.props as any;
+            return (
+              <option key={props.value} value={props.value} disabled={props.disabled}>
+                {props.children}
+              </option>
+            );
+          })}
         </select>
       </div>
     </SelectContext.Provider>
@@ -105,12 +108,12 @@ const SelectTrigger = React.forwardRef<HTMLDivElement, SelectTriggerProps>(
     // Prioritize context.value, then SelectValue's placeholder
     if (context.value && context.value !== '') {
         // Find the actual children of the selected option from context.options
-        const selectedOption = context.options.find(opt => opt.props.value === context.value);
-        displayedValue = selectedOption ? selectedOption.props.children : context.value;
-    } else if (selectValueChild && selectValueChild.props.placeholder) {
-        displayedValue = selectValueChild.props.placeholder;
-    } else if (selectValueChild && selectValueChild.props.children) { // Fallback to SelectValue's children if no value and no placeholder
-        displayedValue = selectValueChild.props.children;
+        const selectedOption = context.options.find(opt => (opt.props as any).value === context.value);
+        displayedValue = selectedOption ? (selectedOption.props as any).children : context.value;
+    } else if (selectValueChild && (selectValueChild.props as any).placeholder) {
+        displayedValue = (selectValueChild.props as any).placeholder;
+    } else if (selectValueChild && (selectValueChild.props as any).children) { // Fallback to SelectValue's children if no value and no placeholder
+        displayedValue = (selectValueChild.props as any).children;
     }
 
 

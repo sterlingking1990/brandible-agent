@@ -1,12 +1,12 @@
 // src/components/ui/switch.tsx
 import * as React from 'react';
 
-interface SwitchProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface SwitchProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'onChange'> {
   checked: boolean;
   onCheckedChange: (checked: boolean) => void;
 }
 
-const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
+const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(
   ({ className, checked, onCheckedChange, disabled, ...props }, ref) => {
     return (
       <button
@@ -20,6 +20,7 @@ const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
         } ${className || ''}`}
         onClick={() => onCheckedChange(!checked)}
         disabled={disabled}
+        ref={ref}
         {...props}
       >
         <span
