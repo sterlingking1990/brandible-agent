@@ -31,10 +31,10 @@ function Select({ value, onValueChange, children, disabled }: SelectProps) {
     // Extract SelectItem components from children for rendering native options
     const selectContentChild = React.Children.toArray(children).find(
       (child) => React.isValidElement(child) && (child.type as any).displayName === 'SelectContent'
-    ) as React.ReactElement | undefined;
+    );
 
-    if (selectContentChild) {
-      const selectItems = React.Children.toArray(selectContentChild.props.children).filter(
+    if (selectContentChild && React.isValidElement(selectContentChild)) {
+      const selectItems = React.Children.toArray((selectContentChild.props as any).children).filter(
         (child) => React.isValidElement(child) && (child.type as any).displayName === 'SelectItem'
       ) as React.ReactElement[];
       setOptions(selectItems);
