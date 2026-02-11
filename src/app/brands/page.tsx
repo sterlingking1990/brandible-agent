@@ -24,7 +24,11 @@ export default async function BrandsPage() {
       brands ( 
         profile_id,
         company_name, 
-        verification_status 
+        verification_status,
+        isAgency,
+        agency_status,
+        sales_handler,
+        business_phone_number
       )
     `)
     .eq('user_type', 'brand')
@@ -47,7 +51,11 @@ export default async function BrandsPage() {
       brands: brandInfo ? {
         company_name: brandInfo.company_name,
         verification_status: brandInfo.verification_status,
-        profile_id: brandInfo.profile_id
+        profile_id: brandInfo.profile_id,
+        isAgency: brandInfo.isAgency,
+        agency_status: brandInfo.agency_status,
+        sales_handler: brandInfo.sales_handler,
+        business_phone_number: brandInfo.business_phone_number,
       } : null
     };
   });

@@ -67,3 +67,50 @@ export async function unverifyBrand(brandProfileId: string) {
   revalidatePath('/brands');
   return { success: true, message: 'Brand verification revoked.' };
 }
+
+export async function updateBrandAgencyDetails(
+  profile_id: string,
+  isAgency: boolean,
+  agencyStatus: string | null,
+  salesHandler: string | null,
+  businessPhoneNumber: string | null // This is the original business_phone_number from the profile
+) {
+  const supabase = await createClient();
+
+  const updateData: {
+    "isAgency": boolean;
+    agency_status: string | null;
+    sales_handler: string | null;
+    business_phone_number?: string | null; // Optional because it might be updated from sales_handler
+  } = {
+    isAgency,
+    agency_status: isAgency ? agencyStatus : null,
+    sales_handler: isAgency ? salesHandler : null,
+  };
+
+  // Logic to update business_phone_number
+  if (isAgency && salesHandler) {
+    updateData.business_phone_number = salesHandler;
+  } else {
+    // If not an agency, or agency but no sales handler, use the provided businessPhoneNumber
+    updateData.business_phone_number = businessPhoneNumber;
+  }
+
+  const { data, error } = await supabase
+    .from('brands')
+    .update(updateData)
+    .eq('profile_id', profile_id)
+    .select();
+
+  if (error) {
+    console.error('❌ Error updating brand agency details:', error);
+    return { success: false, message: error.message };
+  }
+
+  if (!data || data.length === 0) {
+    return { success: false, message: 'No brand found with that ID' };
+  }
+
+  revalidatePath('/brands');
+  return { success: true, message: 'Brand agency details updated successfully!' };
+}

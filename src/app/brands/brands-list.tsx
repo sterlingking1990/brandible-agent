@@ -1,12 +1,61 @@
 'use client';
 
-import { useState } from 'react';
-import { verifyBrand, unverifyBrand } from './actions';
+import { useState, useEffect } from 'react';
+import { verifyBrand, unverifyBrand, updateBrandAgencyDetails } from './actions';
+import EditBrandModal from './edit-brand-modal';
 
 export default function BrandsList({ brands: initialBrands }) {
   const [brands, setBrands] = useState(initialBrands);
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingBrand, setEditingBrand] = useState<any | null>(null);
+  const [savingEdit, setSavingEdit] = useState(false); // New state for saving loading
+
+  const handleEdit = (brand: any) => {
+    setEditingBrand(brand);
+    setIsEditModalOpen(true);
+  };
+
+  const handleSaveEdit = async (updatedBrandData: any) => {
+    setSavingEdit(true); // Set saving state
+    setError(null);
+    try {
+      const result = await updateBrandAgencyDetails(
+        updatedBrandData.profile_id,
+        updatedBrandData.isAgency,
+        updatedBrandData.agency_status,
+        updatedBrandData.sales_handler,
+        updatedBrandData.business_phone_number // Pass the business_phone_number
+      );
+
+      if (!result.success) {
+        setError(result.message || 'Failed to update brand details');
+      } else {
+        // Update local state with the new data
+        setBrands(brands.map(brand =>
+          brand.id === updatedBrandData.profile_id
+            ? {
+                ...brand,
+                brands: {
+                  ...brand.brands,
+                  isAgency: updatedBrandData.isAgency,
+                  agency_status: updatedBrandData.agency_status,
+                  sales_handler: updatedBrandData.sales_handler,
+                  business_phone_number: updatedBrandData.business_phone_number, // Update this as well
+                }
+              }
+            : brand
+        ));
+        setIsEditModalOpen(false); // Close modal on success
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred while saving.');
+    } finally {
+      setSavingEdit(false); // Reset saving state
+      setEditingBrand(null); // Clear editing brand
+    }
+  };
 
   const handleVerify = async (brandProfileId: string) => {
     try {
@@ -56,6 +105,11 @@ export default function BrandsList({ brands: initialBrands }) {
     }
   };
 
+  // Update local 'brands' state when 'initialBrands' prop changes (e.g., on page refresh)
+  useEffect(() => {
+    setBrands(initialBrands);
+  }, [initialBrands]);
+
   return (
     <div className="space-y-4">
       {error && (
@@ -83,8 +137,15 @@ export default function BrandsList({ brands: initialBrands }) {
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Status
               </th>
-              <th scope="col" className="relative px-6 py-3">
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Agency Status
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Sales Handler
+              </th>
+              <th scope="col" className="relative px-6 py-3 text-right">
                 <span className="sr-only">Actions</span>
+                Actions
               </th>
             </tr>
           </thead>
@@ -111,7 +172,34 @@ export default function BrandsList({ brands: initialBrands }) {
                     {brand.brands?.verification_status || 'pending'}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span
+                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                      brand.brands?.isAgency
+                        ? 'bg-blue-100 text-blue-800'
+                        : 'bg-gray-100 text-gray-800'
+                    }`}
+                  >
+                    {brand.brands?.isAgency ? 'Agency' : 'Not Agency'}
+                  </span>
+                  {brand.brands?.isAgency && (
+                    <div className="text-xs text-gray-500 mt-1">
+                      Status: {brand.brands?.agency_status || 'N/A'}
+                    </div>
+                  )}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-gray-900">
+                    {brand.brands?.sales_handler || 'N/A'}
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                  <button
+                    onClick={() => handleEdit(brand)} // New edit button
+                    className="text-yellow-600 hover:text-yellow-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Edit
+                  </button>
                   {brand.brands?.verification_status === 'verified' ? (
                     <button
                       onClick={() => handleUnverify(brand.id)}
@@ -135,6 +223,20 @@ export default function BrandsList({ brands: initialBrands }) {
           </tbody>
         </table>
       </div>
+      {/* Edit Brand Modal */}
+      {editingBrand && (
+        <EditBrandModal
+          isOpen={isEditModalOpen}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setEditingBrand(null);
+            setError(null); // Clear error when closing modal
+          }}
+          brand={editingBrand}
+          onSave={handleSaveEdit}
+          loading={savingEdit}
+        />
+      )}
     </div>
   );
 }
