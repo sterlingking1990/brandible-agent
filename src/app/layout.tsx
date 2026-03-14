@@ -53,6 +53,9 @@ export default function RootLayout({
                             <NavLink href="/settings">
                               App Settings
                             </NavLink>
+                            <NavLink href="/admin/game-controller">
+                              Game Controller
+                            </NavLink>
                             <NavLink href="/dashboard/industries">
                               Industries
                             </NavLink>
