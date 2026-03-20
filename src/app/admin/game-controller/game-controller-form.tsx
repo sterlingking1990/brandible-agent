@@ -25,6 +25,7 @@ type GameSettings = {
   enable_free_mode: boolean;
   show_campaign_history: boolean;
   influencer_reward_percentage: string;
+  level_reset_penalty_percentage: string;
 };
 
 export default function GameControllerForm({ initialSettings }: { initialSettings: Partial<GameSettings> }) {
@@ -46,6 +47,7 @@ export default function GameControllerForm({ initialSettings }: { initialSetting
     enable_free_mode: initialSettings.enable_free_mode ?? true,
     show_campaign_history: initialSettings.show_campaign_history ?? true,
     influencer_reward_percentage: initialSettings.influencer_reward_percentage || '50',
+    level_reset_penalty_percentage: initialSettings.level_reset_penalty_percentage || '50',
   });
 
   const [loading, setLoading] = useState(false);
@@ -105,6 +107,15 @@ export default function GameControllerForm({ initialSettings }: { initialSetting
               type="number"
               value={settings.stages_per_level}
               onChange={(e) => handleChange('stages_per_level', e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="level_reset_penalty_percentage">Level Reset Penalty (%)</Label>
+            <Input
+              id="level_reset_penalty_percentage"
+              type="number"
+              value={settings.level_reset_penalty_percentage}
+              onChange={(e) => handleChange('level_reset_penalty_percentage', e.target.value)}
             />
           </div>
         </div>

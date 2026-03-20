@@ -23,7 +23,8 @@ async function getGameSettings(supabase: any) {
     'enable_bet_mode',
     'enable_free_mode',
     'show_campaign_history',
-    'influencer_reward_percentage'
+    'influencer_reward_percentage',
+    'level_reset_penalty_percentage'
   ];
 
   const { data, error } = await supabase
