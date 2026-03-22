@@ -56,6 +56,9 @@ export default function RootLayout({
                             <NavLink href="/admin/game-controller">
                               Game Controller
                             </NavLink>
+                            <NavLink href="/admin/youtube-ads">
+                              YouTube Ads
+                            </NavLink>
                             <NavLink href="/dashboard/industries">
                               Industries
                             </NavLink>
