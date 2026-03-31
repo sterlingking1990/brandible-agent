@@ -25,7 +25,28 @@ export async function getYouTubeAds() {
     return [];
   }
 
-  return ads;
+  // Define status priority
+  const statusPriority: Record<string, number> = {
+    'active': 0,
+    'pending': 1,
+    'processing': 2,
+    'paused': 3,
+    'completed': 4,
+    'error': 5
+  };
+
+  // Sort by priority, then by created_at (desc)
+  return (ads || []).sort((a, b) => {
+    const priorityA = statusPriority[a.status] ?? 10;
+    const priorityB = statusPriority[b.status] ?? 10;
+
+    if (priorityA !== priorityB) {
+      return priorityA - priorityB;
+    }
+
+    // If same priority, sort by created_at descending
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
 }
 
 export async function updateYouTubeAdIds(
