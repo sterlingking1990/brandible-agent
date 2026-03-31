@@ -65,6 +65,8 @@ export default function YouTubeAdsList({ ads: initialAds }) {
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Brand</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Campaign Name</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ad Group Name</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Format</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Campaign ID</th>
@@ -79,6 +81,12 @@ export default function YouTubeAdsList({ ads: initialAds }) {
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm font-medium text-gray-900">{getBrandName(ad)}</div>
                   <div className="text-xs text-gray-500">{ad.customer_id}</div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {ad.campaign_name || '—'}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {ad.ad_group_name || '—'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {ad.ad_format}
