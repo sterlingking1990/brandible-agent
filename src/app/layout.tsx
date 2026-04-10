@@ -41,6 +41,9 @@ export default function RootLayout({
             <NavLink href="/admin/payouts">
               Pending Payouts
             </NavLink>
+            <NavLink href="/admin/hub-applications">
+              Hub Applications
+            </NavLink>
             <NavLink href="/admin/reports">
               Pending Reports
             </NavLink>

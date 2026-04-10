@@ -7,9 +7,18 @@ interface Props {
   onClose: () => void;
   onConfirm: (reason: string) => void;
   loading: boolean;
+  title?: string;
+  description?: string;
 }
 
-export default function RejectModal({ isOpen, onClose, onConfirm, loading }: Props) {
+export default function RejectModal({ 
+  isOpen, 
+  onClose, 
+  onConfirm, 
+  loading,
+  title = 'Reject Item',
+  description = 'Please provide a reason for rejecting this.'
+}: Props) {
   const [reason, setReason] = useState('');
 
   if (!isOpen) {
@@ -22,15 +31,15 @@ export default function RejectModal({ isOpen, onClose, onConfirm, loading }: Pro
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-      <div className="bg-white p-6 rounded-lg shadow-xl">
-        <h2 className="text-xl font-bold mb-4">Reject Order</h2>
-        <p className="mb-4">Please provide a reason for rejecting this order.</p>
+      <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
+        <h2 className="text-xl font-bold mb-4">{title}</h2>
+        <p className="mb-4">{description}</p>
         <textarea
           value={reason}
           onChange={(e) => setReason(e.target.value)}
           className="w-full p-2 border border-gray-300 rounded-md"
           rows={4}
-          placeholder="e.g., Item out of stock"
+          placeholder="e.g., Application not clear"
         />
         <div className="mt-6 flex justify-end space-x-4">
           <button

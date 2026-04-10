@@ -111,6 +111,8 @@ alert(`Success: ${data.message}`);
         onClose={() => setRejectModalOpen(false)}
         onConfirm={handleConfirmRejection}
         loading={!!loadingId}
+        title="Reject Order"
+        description="Please provide a reason for rejecting this order. This will be visible to the influencer."
       />
       <div className="bg-white shadow-md rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
