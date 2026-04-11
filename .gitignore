@@ -48,4 +48,3 @@ next-env.d.ts
 logs
 *.log
 PASSWORD_RESET_ISSUE_RESOLUTION.md
-remote_schema.sql
